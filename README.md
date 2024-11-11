@@ -6,8 +6,7 @@
 
 ## 目录结构
 magnetic-map-acquisition-system/  
-│ ├── mag_ga/ 
-  │ ├── mag_aq.py # 磁场数据采集脚本  
+│ ├── mag_ga/   │ ├── mag_aq.py # 磁场数据采集脚本  
               │ └── JY901S.py # 传感器数据处理脚本   
               │ └── main.py # 主程序，负责并行运行脚本  
 

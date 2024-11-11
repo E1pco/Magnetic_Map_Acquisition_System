@@ -11,13 +11,15 @@ class MemoryBuffer:
     def get_data(self):
         return ''.join(self.buffer)
 
-def send_and_read_from_serial(port, baudrate, send_data):
+def send_and_read_from_serial(port, baudrate, send_data1, send_data2):
     # 初始化串口连接
     ser = serial.Serial(port, baudrate, timeout=1)
     # 初始化 buffer
     buffer = MemoryBuffer()
-    time.sleep(1.8)  # 等待串口初始化
-
+    time.sleep(1.8)
+    ser.write(send_data1.encode('ascii'))  # 发送 db 命令
+    time.sleep(0.5)  # 等待设备回应
+    # 等待串口初始化
     # 初始化 x, y, z 数组
     x_values = []
     y_values = []
@@ -26,8 +28,8 @@ def send_and_read_from_serial(port, baudrate, send_data):
     try:
         # 发送 rc 命令
         print("Sending 'rc' command...")
-        ser.write(send_data.encode('ascii'))  # 发送 rc 命令
-        time.sleep(1)  # 等待设备回应
+        ser.write(send_data2.encode('ascii'))  # 发送 rc 命令
+        time.sleep(1.06)  # 等待设备回应
         
         # 等待接收数据
         if ser.in_waiting > 0:
@@ -69,8 +71,11 @@ if __name__ == "__main__":
 
     port ="COM23" 
     baudrate = 115200
-    send_data = "rc"  # 需要先发送的命令
-    buffer, x_list, y_list, z_list, t_list = send_and_read_from_serial(port, baudrate, send_data)
+    send_data_rc = "rc"  # 需要先发送的命令
+    
+    send_data_db= "db 15"  
+    # 等待串口初始化
+    buffer, x_list, y_list, z_list, t_list = send_and_read_from_serial(port, baudrate, send_data_db, send_data_rc)
     timestamp = time.time()
 
 # 转换为本地时间的结构化格式
@@ -78,10 +83,7 @@ if __name__ == "__main__":
 
 # 格式化为可读的字符串
     readable_time = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
-
     print(f"script1 finished at time: {readable_time}")
-    
-    
     print(f"x values: {x_list}")
     print(f"y values: {y_list}")
     print(f"z values: {z_list}")

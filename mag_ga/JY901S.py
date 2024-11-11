@@ -160,19 +160,19 @@ def onUpdate_uesr(deviceModel):
     lat_list.append(lat)
     yaw_list.append(yaw)
     speed_list.append(speed)
-    print("传感器数据更新:")
-    print(f"芯片时间: {chip_time}")
-    print(f"温度: {temperature}")
-    print(f"加速度: X轴={acc_x}, Y轴={acc_y}, Z轴={acc_z}")
-    print(f"角速度: X轴={gyro_x}, Y轴={gyro_y}, Z轴={gyro_z}")
-    print(f"角度: X轴={angle_x}, Y轴={angle_y}, Z轴={angle_z}")
-    print(f"磁场: X轴={mag_x}, Y轴={mag_y}, Z轴={mag_z}")
-    print(f"经度: {lon}")
-    print(f"纬度: {lat}")
-    print(f"航向角: {yaw}")
-    print(f"地速: {speed}")
-    print(f"四元数: q1={q1}, q2={q2}, q3={q3}, q4={q4}")
-    print("-----------")
+    #print("传感器数据更新:")
+    #print(f"芯片时间: {chip_time}")
+    #print(f"温度: {temperature}")
+    #print(f"加速度: X轴={acc_x}, Y轴={acc_y}, Z轴={acc_z}")
+    #print(f"角速度: X轴={gyro_x}, Y轴={gyro_y}, Z轴={gyro_z}")
+    #print(f"角度: X轴={angle_x}, Y轴={angle_y}, Z轴={angle_z}")
+    #print(f"磁场: X轴={mag_x}, Y轴={mag_y}, Z轴={mag_z}")
+    #print(f"经度: {lon}")
+    #print(f"纬度: {lat}")
+    #print(f"航向角: {yaw}")
+    #print(f"地速: {speed}")
+    #print(f"四元数: q1={q1}, q2={q2}, q3={q3}, q4={q4}")
+    #print("-----------")
 
 def onUpdate(deviceModel):
     """
@@ -269,15 +269,25 @@ if __name__ == '__main__':
     if (platform.system().lower() == 'linux'):
         device.serialConfig.portName = "/dev/ttyUSB0"   #设置串口   Set serial port
     else:
-        device.serialConfig.portName = "COM11"          #设置串口   Set serial port
+        device.serialConfig.portName = "COM10"          #设置串口   Set serial port
     device.serialConfig.baud = 9600                     #设置波特率  Set baud rate
-    time.sleep(1.8)                                    #等待1s    Wait 1s
-    device.openDevice()                                 #打开串口   Open serial port
+    time.sleep(2.2)                                    #等待1s    Wait 1s
+    device.openDevice()#打开串口   Open serial port
+    device.unlock()
+    time.sleep(0.1)
+    device.writeReg(0X1F, 0X00)
+    time.sleep(0.2)
+    a=device.readReg(0X1F,2)
+    print(f'a={a}')
+    device.writeReg(0x03, 0X09)
+    time.sleep(0.1)
+    device.save()
     readConfig(device)                                  #读取配置信息 Read configuration information
     device.dataProcessor.onVarChanged.append(onUpdate_uesr)  #数据更新事件 Data update event
     startRecord()                                       # 开始记录数据    Start recording data
     #input()
-    print(chaptime_list)
+    print(anglex_list)
+    print(len(anglex_list))
     #print(angley_list)
     #device.closeDevice()
     #endRecord()                                         #结束记录数据 End record data

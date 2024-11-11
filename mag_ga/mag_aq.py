@@ -33,7 +33,7 @@ def send_and_read_from_serial(port, baudrate, send_data):
         if ser.in_waiting > 0:
             # 读取所有可用数据
             received_data = ser.read(ser.in_waiting).decode(errors='ignore')
-            print(f"Received raw data: '{received_data}'")  # 打印接收到的原始数据
+            #print(f"Received raw data: '{received_data}'")  # 打印接收到的原始数据
             buffer.write(received_data)
 
             # 按换行符拆分数据
@@ -58,7 +58,7 @@ def send_and_read_from_serial(port, baudrate, send_data):
                                 x_values.append(x)
                                 y_values.append(y)
                                 z_values.append(z)
-                                print(f"Extracted values - x: {x}, y: {y}, z: {z}")  # 提取值信息
+                                #print(f"Extracted values - x: {x}, y: {y}, z: {z}")  # 提取值信息
     finally:
         # 关闭串口
         ser.close()   
@@ -70,8 +70,18 @@ if __name__ == "__main__":
     port ="COM23" 
     baudrate = 115200
     send_data = "rc"  # 需要先发送的命令
-    
     buffer, x_list, y_list, z_list, t_list = send_and_read_from_serial(port, baudrate, send_data)
+    timestamp = time.time()
+
+# 转换为本地时间的结构化格式
+    local_time = time.localtime(timestamp)
+
+# 格式化为可读的字符串
+    readable_time = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
+
+    print(f"script1 start time: {readable_time}")
+    
+    
     print(f"x values: {x_list}")
     print(f"y values: {y_list}")
     print(f"z values: {z_list}")
@@ -80,4 +90,4 @@ if __name__ == "__main__":
     print(f"ylength: {len(y_list)}")
     print(f"zlength: {len(z_list)}")
     print(f"tlength: {len(t_list)}")
-    print(f"buffer length: {len(buffer.get_data())}")
+   

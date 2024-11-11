@@ -28,6 +28,7 @@ lon_list=[]
 lat_list=[]
 yaw_list=[]
 speed_list=[]
+
 def readConfig(device):
     """
     读取配置信息示例    Example of reading configuration information
@@ -227,9 +228,20 @@ def startRecord():
     Tempstr += "\tq1\tq2\tq3\tq4"
     Tempstr += "\r\n"
     _writeF.write(Tempstr)
-    #time.sleep(1)  # 等待1秒钟进行数据记录
-    #device.closeDevice()
-    #endRecord()  # 结束记录数据
+
+    time.sleep(1)  # 等待1秒钟进行数据记录
+    timestamp = time.time()
+
+# 转换为本地时间的结构化格式
+    local_time = time.localtime(timestamp)
+
+# 格式化为可读的字符串
+    readable_time = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
+
+    print(f"script2 start time: {readable_time}")
+    
+    device.closeDevice()
+    endRecord()  # 结束记录数据
 def endRecord():
     """
     结束记录数据  End record data
@@ -264,8 +276,8 @@ if __name__ == '__main__':
     
     device.dataProcessor.onVarChanged.append(onUpdate)  #数据更新事件 Data update event
     startRecord()                                       # 开始记录数据    Start recording data
-    print(chaptime_list)
-    print(angley_list)
-    input()
-    device.closeDevice()
-    endRecord()                                         #结束记录数据 End record data
+    #input()
+    #print(chaptime_list)
+    #print(angley_list)
+    #device.closeDevice()
+    #endRecord()                                         #结束记录数据 End record data

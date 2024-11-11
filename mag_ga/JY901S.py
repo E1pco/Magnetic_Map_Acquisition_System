@@ -265,7 +265,7 @@ if __name__ == '__main__':
     )
 
 
-
+    
     if (platform.system().lower() == 'linux'):
         device.serialConfig.portName = "/dev/ttyUSB0"   #设置串口   Set serial port
     else:
@@ -275,7 +275,8 @@ if __name__ == '__main__':
     device.openDevice()#打开串口   Open serial port
     device.unlock()
     time.sleep(0.1)
-    device.writeReg(0X1F, 0X00)
+    device.protocolResolver.get_readbytes((0X1F, 0X00))
+    device.writeReg
     time.sleep(0.2)
     a=device.readReg(0X1F,2)
     print(f'a={a}')

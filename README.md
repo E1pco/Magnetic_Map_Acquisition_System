@@ -5,14 +5,16 @@
 本项目是一个磁场数据采集系统，旨在从传感器中获取磁场数据并进行处理。系统由多个脚本组成，能够并行运行，实时采集和记录数据。
 
 ## 目录结构
-DiffCopyInsert
-magnetic-map-acquisition-system/ │ ├── mag_ga/ │ ├── mag_aq.py # 磁场数据采集脚本 │ └── JY901S.py # 传感器数据处理脚本 │ └── main.py # 主程序，负责并行运行脚本
+magnetic-map-acquisition-system/ 
+│ ├── mag_ga/ │ ├── mag_aq.py # 磁场数据采集脚本
+              │ └── JY901S.py # 传感器数据处理脚本 
+              │ └── main.py # 主程序，负责并行运行脚本
 
 
 ## 安装依赖
 在使用之前，请确保安装以下Python库：
 pip install pyserial
-DiffCopyInsert
+
 
 ## 启动项目
 在终端中运行主程序：
@@ -22,6 +24,7 @@ python main.py
 ## 使用说明
 mag_aq.py：负责从磁场传感器读取数据并进行处理。
 JY901S.py：与 JY901 传感器进行通信，获取相关姿态数据。
+
 ## 注意事项
 确保传感器设备正确连接并配置好串口。
 根据实际需要调整串口设置和脚本参数。

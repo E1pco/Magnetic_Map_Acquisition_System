@@ -79,7 +79,7 @@ if __name__ == "__main__":
 # 格式化为可读的字符串
     readable_time = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
 
-    print(f"script1 start time: {readable_time}")
+    print(f"script1 finished at time: {readable_time}")
     
     
     print(f"x values: {x_list}")

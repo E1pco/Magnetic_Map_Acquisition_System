@@ -23,7 +23,7 @@ pip install pyserial
 在终端中运行主程序：  
 
 ```
-
+python main.py
 ```
 
 该程序将并行运行 mag_aq.py 和 JY901S.py 两个脚本，用于采集和处理磁场数据。运行完成后，会输出当前的时间戳。  

@@ -5,7 +5,7 @@
 本项目是一个磁场数据采集系统，旨在从传感器中获取磁场数据并进行处理。系统由多个脚本组成，能够并行运行，实时采集和记录数据。
 
 ## 目录结构
-magnetic-map-acquisition-system/  │ ├── mag_ga/  │ ├── mag_aq.py # 磁场数据采集脚本  
+magnetic-map-acquisition-system/  │ ├── mag_ga/     │ ├── mag_aq.py # 磁场数据采集脚本  
               │ └── JY901S.py # 传感器数据处理脚本   
               │ └── main.py # 主程序，负责并行运行脚本  
 

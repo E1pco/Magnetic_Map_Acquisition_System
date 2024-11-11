@@ -274,10 +274,10 @@ if __name__ == '__main__':
     time.sleep(1.8)                                    #等待1s    Wait 1s
     device.openDevice()                                 #打开串口   Open serial port
     readConfig(device)                                  #读取配置信息 Read configuration information
-    device.dataProcessor.onVarChanged.append(onUpdate)  #数据更新事件 Data update event
+    device.dataProcessor.onVarChanged.append(onUpdate_uesr)  #数据更新事件 Data update event
     startRecord()                                       # 开始记录数据    Start recording data
     #input()
-    #print(chaptime_list)
+    print(chaptime_list)
     #print(angley_list)
     #device.closeDevice()
     #endRecord()                                         #结束记录数据 End record data

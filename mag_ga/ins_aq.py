@@ -54,7 +54,9 @@ def setConfig(device):
     """
     device.unlock()                # 解锁 unlock
     time.sleep(0.1)                # 休眠100毫秒    Sleep 100ms
-    device.writeReg(0x03, 6)       # 设置回传速率为10HZ    Set the transmission back rate to 10HZ
+    device.writeReg(0x04, 6)       
+    time.sleep(0.1)   
+    device.writeReg(0x03, 9)       # 设置回传速率为100HZ    Set the transmission back rate to 100HZ
     time.sleep(0.1)                # 休眠100毫秒    Sleep 100ms
     device.writeReg(0x23, 0)       # 设置安装方向:水平、垂直   Set the installation direction: horizontal and vertical
     time.sleep(0.1)                # 休眠100毫秒    Sleep 100ms
@@ -190,19 +192,19 @@ def onUpdate(deviceModel):
         , " 航向角:" + str(deviceModel.getDeviceData("Yaw")) + " 地速:" + str(deviceModel.getDeviceData("Speed"))
          , " 四元素:" + str(deviceModel.getDeviceData("q1")) + "," + str(deviceModel.getDeviceData("q2")) + "," + str(deviceModel.getDeviceData("q3"))+ "," + str(deviceModel.getDeviceData("q4"))
           )
-    #if (_IsWriteF):    #记录数据    Record data
-    #    Tempstr = " " + str(deviceModel.getDeviceData("Chiptime"))
-    #    Tempstr += "\t"+str(deviceModel.getDeviceData("accX")) + "\t"+str(deviceModel.getDeviceData("accY"))+"\t"+ str(deviceModel.getDeviceData("accZ"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("gyroX")) +"\t"+ str(deviceModel.getDeviceData("gyroY")) +"\t"+ str(deviceModel.getDeviceData("gyroZ"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("angleX")) +"\t" + str(deviceModel.getDeviceData("angleY")) +"\t"+ str(deviceModel.getDeviceData("angleZ"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("temperature"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("magX")) +"\t" + str(deviceModel.getDeviceData("magY")) +"\t"+ str(deviceModel.getDeviceData("magZ"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("lon")) + "\t" + str(deviceModel.getDeviceData("lat"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("Yaw")) + "\t" + str(deviceModel.getDeviceData("Speed"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("q1")) + "\t" + str(deviceModel.getDeviceData("q2"))
-    #    Tempstr += "\t" + str(deviceModel.getDeviceData("q3")) + "\t" + str(deviceModel.getDeviceData("q4"))
-    #    Tempstr += "\r\n"
-    #    _writeF.write(Tempstr)
+    if (_IsWriteF):    #记录数据    Record data
+        Tempstr = " " + str(deviceModel.getDeviceData("Chiptime"))
+        Tempstr += "\t"+str(deviceModel.getDeviceData("accX")) + "\t"+str(deviceModel.getDeviceData("accY"))+"\t"+ str(deviceModel.getDeviceData("accZ"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("gyroX")) +"\t"+ str(deviceModel.getDeviceData("gyroY")) +"\t"+ str(deviceModel.getDeviceData("gyroZ"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("angleX")) +"\t" + str(deviceModel.getDeviceData("angleY")) +"\t"+ str(deviceModel.getDeviceData("angleZ"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("temperature"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("magX")) +"\t" + str(deviceModel.getDeviceData("magY")) +"\t"+ str(deviceModel.getDeviceData("magZ"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("lon")) + "\t" + str(deviceModel.getDeviceData("lat"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("Yaw")) + "\t" + str(deviceModel.getDeviceData("Speed"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("q1")) + "\t" + str(deviceModel.getDeviceData("q2"))
+        Tempstr += "\t" + str(deviceModel.getDeviceData("q3")) + "\t" + str(deviceModel.getDeviceData("q4"))
+        Tempstr += "\r\n"
+        _writeF.write(Tempstr)
 def startRecord():
     """
     开始记录数据  Start recording d
@@ -270,25 +272,24 @@ if __name__ == '__main__':
         device.serialConfig.portName = "/dev/ttyUSB0"   #设置串口   Set serial port
     else:
         device.serialConfig.portName = "COM10"          #设置串口   Set serial port
-    device.serialConfig.baud = 9600                     #设置波特率  Set baud rate
+    device.serialConfig.baud = 115200                     #设置波特率  Set baud rate
     time.sleep(2.2)                                    #等待1s    Wait 1s
     device.openDevice()#打开串口   Open serial port
-    device.unlock()
-    time.sleep(0.1)
-    device.protocolResolver.get_readbytes((0X1F, 0X00))
-    device.writeReg
-    time.sleep(0.2)
-    a=device.readReg(0X1F,2)
-    print(f'a={a}')
-    device.writeReg(0x03, 0X09)
-    time.sleep(0.1)
-    device.save()
+    #device.unlock()
+    #time.sleep(0.1)
+    #device.writeReg(0X1F, 0X00)
+    #time.sleep(0.1)
+    #device.writeReg(0x03, 0X09)
+    #time.sleep(0.1)
+    #device.save()
+    #time.sleep(0.1)
+    #setConfig(device)                                   #设置配置信息 Set configuration information
     readConfig(device)                                  #读取配置信息 Read configuration information
     device.dataProcessor.onVarChanged.append(onUpdate_uesr)  #数据更新事件 Data update event
     startRecord()                                       # 开始记录数据    Start recording data
     #input()
-    print(anglex_list)
-    print(len(anglex_list))
+    print(chaptime_list)
+    print(len(lon_list))
     #print(angley_list)
     #device.closeDevice()
     #endRecord()                                         #结束记录数据 End record data

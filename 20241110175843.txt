@@ -1,1 +1,0 @@
-Chiptime	ax(g)	ay(g)	az(g)	wx(deg/s)	wy(deg/s)	wz(deg/s)	AngleX(deg)	AngleY(deg)	AngleZ(deg)	T(бу)	magx	magy	magz

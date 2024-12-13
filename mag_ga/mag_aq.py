@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import threading
 import csv
 import argparse
-
+import os
 def save_to_csv(file_path, t_values, x_values, y_values, z_values):
     with open(file_path, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -132,18 +132,27 @@ def send_and_read_from_serial(port, baudrate, send_data1, send_data2, duration, 
     finally:
         ser.close()
 
+
+
 def main(duration):
-    port = "COM6"  # 根据实际情况修改
+    # 根据操作系统选择端口
+    if os.name == 'nt':  # Windows 系统
+        port = "COM6"  # 根据实际情况修改
+    else:  # 假设其他系统为Linux
+        port = "/dev/mag"  # 根据实际情况修改
+    
     baudrate = 115200
     send_data_rc = "rc"
     send_data_db = "db 15"
     
-    # 设置输出文件路径
-    output_csv_file = "output_data.csv"  # 设置输出的 CSV 文件路径
+    # 获取当前时间并格式化为字符串
+    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_csv_file = f"output_data_{current_time}.csv"  # 设置输出的 CSV 文件路径，文件名为当前时间
     
     # 启动数据采集
     send_and_read_from_serial(port, baudrate, send_data_db, send_data_rc, duration, output_csv_file)
-    print(f"Program ran for {duration} seconds.")
+    print(f"Program ran for {duration} seconds. Output saved to {output_csv_file}.")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run program for a specified duration.")

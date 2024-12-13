@@ -2,8 +2,8 @@ import subprocess
 
 def run_programs_for_duration(duration):
     # 要运行的两个程序的命令，传递duration作为参数
-    program1 = ["python", "mag_ga\\ins_aq.py", str(duration)]  # 将duration作为字符串传递
-    program2 = ["python", "mag_ga\\mag_aq.py", str(duration)]  # 将duration作为字符串传递
+    program1 = ["python", "mag_ga/ins_aq.py", str(duration)]  # 将duration作为字符串传递
+    program2 = ["python", "mag_ga/mag_aq.py", str(duration)]  # 将duration作为字符串传递
 
     # 启动并行运行程序
     process1 = subprocess.Popen(program1)

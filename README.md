@@ -8,8 +8,8 @@
 magnetic-map-acquisition-system/  │ ├── mag_ga/  
               │ ├── mag_aq.py # 磁场数据采集脚本  
               │ └── ins_aq.py # 传感器数据处理脚本   
-              │ └── main.py # 主程序，负责并行运行脚本
-              │ └──ins_data # 存放imu和gps传感器数据的文件夹
+              │ └── main.py # 主程序，负责并行运行脚本  
+              │ └──ins_data # 存放imu和gps传感器数据的文件夹  
               │ └──mag_data # 存放磁场传感器数据的文件夹
 
 

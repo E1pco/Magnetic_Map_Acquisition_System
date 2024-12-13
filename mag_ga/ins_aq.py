@@ -88,6 +88,17 @@ def onUpdate_uesr(deviceModel):
     lon_list.append(lon)
     lat_list.append(lat)
 
+    if _IsWriteF:
+        csv_writer.writerow([
+            sensor_data["芯片时间"],
+            sensor_data["加速度"]["X轴"],
+            sensor_data["加速度"]["Y轴"],
+            sensor_data["加速度"]["Z轴"],
+            sensor_data["温度"],
+            sensor_data["经度"],
+            sensor_data["纬度"]
+        ])
+
 def startRecord():
     """
     开始记录数据到CSV文件
@@ -95,11 +106,11 @@ def startRecord():
     global _IsWriteF, csv_writer, csvfile
 
     # 创建data文件夹（如果不存在）
-    if not os.path.exists('data'):
-        os.makedirs('data')
+    if not os.path.exists('ins_data'):
+        os.makedirs('ins_data')
     
     # 新建一个CSV文件
-    filename = os.path.join('data', str(datetime.now().strftime('%Y%m%d%H%M%S')) + ".csv")
+    filename = os.path.join('ins_data', str(datetime.now().strftime('ins_data_%Y%m%d%H%M%S')) + ".csv")
     csvfile = open(filename, "w", newline='')
     _IsWriteF = True
     
@@ -117,7 +128,7 @@ def endRecord():
     """
     结束记录数据
     """
-    global _IsWriteF, csvfile
+    
     _IsWriteF = False
     csvfile.close()
     print("结束记录数据")
@@ -199,7 +210,7 @@ def main(duration):
     else:
         device.serialConfig.portName = "COM13"
     device.serialConfig.baud = 115200
-    time.sleep(2.397)
+    time.sleep(2.91)
    
     device.openDevice()
     setConfig(device)

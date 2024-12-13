@@ -6,13 +6,18 @@ import threading
 import csv
 import argparse
 import os
-def save_to_csv(file_path, t_values, x_values, y_values, z_values):
+import numpy as np
+
+# 保存数据到CSV（只保留模值和滤波后的模值六位小数）
+def save_to_csv(file_path, t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes):
     with open(file_path, 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Time", "X", "Y", "Z"])
-        for t, x, y, z in zip(t_values, x_values, y_values, z_values):
-            writer.writerow([t, x, y, z])
+        writer.writerow(["Time", "X", "Y", "Z", "Magnitude", "Filtered Magnitude"])
+        for t, x, y, z, m, fm in zip(t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes):
+            # 仅对模值和滤波后的模值保留六位小数
+            writer.writerow([t, x, y, z, round(m, 6), round(fm, 6)])
 
+# 解析接收到的数据
 def parse_received_data(received_data):
     x_values = []
     y_values = []
@@ -41,33 +46,68 @@ def parse_received_data(received_data):
     
     return x_values, y_values, z_values, t_values
 
-def visualize_data(x_values, y_values, z_values, t_values):
-    plt.figure(figsize=(15, 5))
+# 计算模值 (Magnitude)
+def calculate_magnitude(x_values, y_values, z_values):
+    magnitudes = np.sqrt(np.array(x_values)**2 + np.array(y_values)**2 + np.array(z_values)**2)
+    return magnitudes
 
-    plt.subplot(1, 3, 1)
+# 均值滤波，每10个数据点做一次均值
+def moving_average_filter(data, window_size=10):
+    filtered_data = []
+    for i in range(len(data)):
+        # 获取当前窗口的起始和结束索引
+        start_index = max(0, i - window_size + 1)
+        window = data[start_index:i+1]
+        # 计算当前窗口的均值
+        filtered_data.append(np.mean(window))
+    return filtered_data
+
+# 可视化数据
+def visualize_data(x_values, y_values, z_values, t_values, magnitudes, filtered_magnitudes):
+    plt.figure(figsize=(15, 8))
+
+    # X, Y, Z Values Plot
+    plt.subplot(2, 3, 1)
     plt.plot(t_values, x_values, label='X Values', color='r')
     plt.xlabel('Time (s)')
     plt.ylabel('X Values')
     plt.title('X Values Over Time')
     plt.grid()
 
-    plt.subplot(1, 3, 2)
+    plt.subplot(2, 3, 2)
     plt.plot(t_values, y_values, label='Y Values', color='g')
     plt.xlabel('Time (s)')
     plt.ylabel('Y Values')
     plt.title('Y Values Over Time')
     plt.grid()
 
-    plt.subplot(1, 3, 3)
+    plt.subplot(2, 3, 3)
     plt.plot(t_values, z_values, label='Z Values', color='b')
     plt.xlabel('Time (s)')
     plt.ylabel('Z Values')
     plt.title('Z Values Over Time')
     plt.grid()
 
+    # Magnitudes Plot
+    plt.subplot(2, 3, 4)
+    plt.plot(t_values, magnitudes, label='Magnitude', color='purple')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Magnitude')
+    plt.title('Magnitude Over Time')
+    plt.grid()
+
+    # Filtered Magnitudes Plot
+    plt.subplot(2, 3, 5)
+    plt.plot(t_values, filtered_magnitudes, label='Filtered Magnitude', color='orange')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Filtered Magnitude')
+    plt.title('Filtered Magnitude Over Time')
+    plt.grid()
+
     plt.tight_layout()
     plt.show()
 
+# 从串口读取数据
 def read_from_serial(ser, stop_event, data_lists, duration):
     x_values, y_values, z_values, t_values = data_lists
     start_time = time.time()
@@ -90,6 +130,7 @@ def read_from_serial(ser, stop_event, data_lists, duration):
     except Exception as e:
         print(f"Error in read_from_serial thread: {e}")
 
+# 发送和读取串口数据
 def send_and_read_from_serial(port, baudrate, send_data1, send_data2, duration, output_csv_file):
     ser = serial.Serial(port, baudrate, timeout=1)
     time.sleep(1.8)
@@ -123,17 +164,20 @@ def send_and_read_from_serial(port, baudrate, send_data1, send_data2, duration, 
         print("mag_aq finished:", current_time_finish)
         print("结束记录数据")
 
+        # 计算模值和均值滤波
+        magnitudes = calculate_magnitude(x_values, y_values, z_values)
+        filtered_magnitudes = moving_average_filter(magnitudes, window_size=10)
+
         # 保存数据到 CSV 文件
-        save_to_csv(output_csv_file, t_values, x_values, y_values, z_values)
+        save_to_csv(output_csv_file, t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes)
 
         # 在收集完所有数据后进行可视化
-        visualize_data(x_values, y_values, z_values, t_values)
+        visualize_data(x_values, y_values, z_values, t_values, magnitudes, filtered_magnitudes)
 
     finally:
         ser.close()
 
-
-
+# 主函数
 def main(duration):
     # 根据操作系统选择端口
     if os.name == 'nt':  # Windows 系统
@@ -144,15 +188,14 @@ def main(duration):
     baudrate = 115200
     send_data_rc = "rc"
     send_data_db = "db 15"
-    
+    if not os.path.exists('mag_data'):
+        os.makedirs('mag_data')   
     # 获取当前时间并格式化为字符串
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_csv_file = f"output_data_{current_time}.csv"  # 设置输出的 CSV 文件路径，文件名为当前时间
+    output_csv_file = f"mag_data/mag_data_{current_time}.csv"  # 设置输出的 CSV 文件路径，文件名为当前时间
     
     # 启动数据采集
     send_and_read_from_serial(port, baudrate, send_data_db, send_data_rc, duration, output_csv_file)
-    print(f"Program ran for {duration} seconds. Output saved to {output_csv_file}.")
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run program for a specified duration.")

@@ -1,0 +1,1 @@
+Chiptime	ax(g)	ay(g)	az(g)	wx(deg/s)	wy(deg/s)	wz(deg/s)	AngleX(deg)	AngleY(deg)	AngleZ(deg)	T(°)	magx	magy	magz	lon	lat	Yaw	Speed	q1	q2	q3	q4

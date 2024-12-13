@@ -1,0 +1,9 @@
+
+{Language, present choices are EN,ZH}
+Language:EN
+
+{Data Points to set in chart buffers>0, <1e6}
+DataPts:500
+
+{Analog Gauge Range >0}
+AGR:10

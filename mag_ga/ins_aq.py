@@ -45,11 +45,6 @@ def AccelerationCalibration(device):
     device.AccelerationCalibration()
     print("加计校准结束")
 
-def FiledCalibration(device):
-    device.BeginFiledCalibration()
-    if input("请分别绕XYZ轴慢速转动一圈，三轴转圈完成后，结束校准（Y/N)？").lower() == "y":
-        device.EndFiledCalibration()
-        print("结束磁场校准")
 def onUpdate_uesr(deviceModel):
     """
     数据更新事件
@@ -77,7 +72,7 @@ def onUpdate_uesr(deviceModel):
     acc_z = sensor_data["加速度"]["Z轴"]
     lon = sensor_data["经度"]
     lat = sensor_data["纬度"]
-    
+
     # 将数据存储到全局列表
     global chaptime_list, temp_list, accx_list, accy_list, accz_list, lon_list, lat_list
     chaptime_list.append(chip_time)
@@ -191,7 +186,7 @@ def visualize_data():
 
     plt.tight_layout()
     plt.show()
-
+    
 
 def main(duration):
     """
@@ -208,9 +203,9 @@ def main(duration):
     if platform.system().lower() == 'linux':
         device.serialConfig.portName = "/dev/ins"
     else:
-        device.serialConfig.portName = "COM13"
+        device.serialConfig.portName = "COM5"
     device.serialConfig.baud = 115200
-    time.sleep(2.91)
+    time.sleep(2.21)
    
     device.openDevice()
     setConfig(device)
@@ -231,7 +226,6 @@ def main(duration):
     print("结束记录数据")    
     
     visualize_data()  # 可视化数据
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run program for a specified duration.")
     parser.add_argument("duration", type=int, help="Duration to run the program in seconds")

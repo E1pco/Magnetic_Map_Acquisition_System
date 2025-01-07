@@ -106,7 +106,7 @@ def visualize_data(x_values, y_values, z_values, t_values, magnitudes, filtered_
 
     plt.tight_layout()
     plt.show()
-
+    print()
 # 从串口读取数据
 def read_from_serial(ser, stop_event, data_lists, duration):
     x_values, y_values, z_values, t_values = data_lists

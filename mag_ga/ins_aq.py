@@ -4,6 +4,8 @@ import csv
 from datetime import datetime
 import platform
 import argparse
+import threading
+import serial
 from lib.device_model import DeviceModel
 from lib.data_processor.roles.jy901s_dataProcessor import JY901SDataProcessor
 from lib.protocol_resolver.roles.wit_protocol_resolver import WitProtocolResolver
@@ -16,17 +18,30 @@ accy_list = []
 accz_list = []
 lon_list = []
 lat_list = []
+
+# 全局变量
+_IsWriteF = False
+csv_writer = None
+csvfile = None
+stop_event = threading.Event()
+
+def log_message(message):
+    """将消息同时输出到控制台和日志文件"""
+    print(message)
+    with open('mag_ga/ins_aq.log', 'a') as log_file:
+        log_file.write(f'{datetime.now()}: {message}\n')
+
 def readConfig(device):
     tVals = device.readReg(0x02, 3)
     if len(tVals) > 0:
-        print("返回结果：" + str(tVals))
+        log_message("返回结果：" + str(tVals))
     else:
-        print("无返回")
+        log_message("无返回")
     tVals = device.readReg(0x23, 2)
     if len(tVals) > 0:
-        print("返回结果：" + str(tVals))
+        log_message("返回结果：" + str(tVals))
     else:
-        print("无返回")
+        log_message("无返回")
 
 def setConfig(device):
     device.unlock()
@@ -43,7 +58,7 @@ def setConfig(device):
 
 def AccelerationCalibration(device):
     device.AccelerationCalibration()
-    print("加计校准结束")
+    log_message("加计校准结束")
 
 def onUpdate_uesr(deviceModel):
     """
@@ -64,7 +79,6 @@ def onUpdate_uesr(deviceModel):
         "纬度": deviceModel.getDeviceData("lat"),
     }
 
-   
     chip_time = sensor_data["芯片时间"]
     temperature = sensor_data["温度"]
     acc_x = sensor_data["加速度"]["X轴"]
@@ -123,10 +137,10 @@ def endRecord():
     """
     结束记录数据
     """
-    
+    global _IsWriteF
     _IsWriteF = False
     csvfile.close()
-    print("结束记录数据")
+    log_message("结束记录数据")
 
 def visualize_data():
     """可视化加速度、温度及其他数据。"""
@@ -186,13 +200,30 @@ def visualize_data():
 
     plt.tight_layout()
     plt.show()
-    
+
+def wait_for_mag_ready():
+    while True:
+        try:
+            with open("/dev/shm/mag_ready", "r") as f:
+                content = f.read().strip()
+                if content == "ready":
+                    # 读取到ready后删除文件
+                    os.remove("/dev/shm/mag_ready")
+                    return
+        except FileNotFoundError:
+            time.sleep(0.1)
+
+# Global timing variables
+start_time = None
+finish_time = None
 
 def main(duration):
     """
     Main function to run the program for a specified duration
     :param duration: Duration to run the program in seconds
     """
+    global start_time, finish_time
+    
     # 初始化设备模型
     device = DeviceModel(
         "我的JY901",
@@ -205,29 +236,45 @@ def main(duration):
     else:
         device.serialConfig.portName = "COM5"
     device.serialConfig.baud = 115200
-    time.sleep(2.21)
-   
+    
+    # 等待MAG准备就绪
+    log_message("等待MAG准备就绪...")
+    #wait_for_mag_ready()
+    time.sleep(2.24)
+    log_message("MAG已就绪，开始INS数据采集")
+
     device.openDevice()
     setConfig(device)
-    now_start = datetime.now()
-    current_time_start = now_start.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-    print("ins_aq started:", current_time_start)
+    start_time = datetime.now()
+    log_message(f'ins_aq started: {start_time}')
     device.dataProcessor.onVarChanged.append(onUpdate_uesr)
+
+    if duration != 0:
+        startRecord()  # 开始记录数据到 CSV
+        time.sleep(duration)
+        device.closeDevice()
+        endRecord()  # 结束记录数据
+    else:
+        startRecord()  # 开始记录数据到 CSV
+        input()
+        device.closeDevice()
+        endRecord()  # 结束记录数据
+
+    finish_time = datetime.now()
+    log_message(f'ins_aq finished: {finish_time}')
+    log_message("结束记录数据")
     
-    startRecord()  # 开始记录数据到 CSV
-    time.sleep(duration)
-    
-    device.closeDevice()
-    endRecord()  # 结束记录数据
-    
-    now_finish = datetime.now()
-    current_time_finish = now_finish.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-    print("ins_aq finished:", current_time_finish)
-    print("结束记录数据")    
-    
+    # 计算并写入最后的消息
+    elapsed_time = (finish_time - start_time).total_seconds()
+    final_msg = f"数据采集完成\n开始时间: {start_time}\n结束时间: {finish_time}\n运行时间: {elapsed_time:.1f}秒"
+    with open("/dev/shm/ins_final_msg", "w") as f:
+        f.write(final_msg)
+
     visualize_data()  # 可视化数据
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run program for a specified duration.")
     parser.add_argument("duration", type=int, help="Duration to run the program in seconds")
     args = parser.parse_args()
     main(args.duration)
+    print("程序运行时间：" + str(finish_time-start_time))

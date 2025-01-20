@@ -36,12 +36,12 @@ def save_to_csv(file_path, t_values, x_values, y_values, z_values, magnitudes, f
     # 生成处理后的文件名
     base_name = os.path.splitext(file_path)[0]
     processed_file = f"{base_name}_processed.csv"
-    
+    unprocessed_file = f"{base_name}_unprocessed.csv"
     # 保存处理后的数据，使用float_format确保输出6位小数
     df_processed.to_csv(processed_file, index=False, float_format='%.6f')
     
     # 同时保存原始数据，也使用6位小数
-    df.to_csv(file_path, index=False, float_format='%.6f')
+    df.to_csv(unprocessed_file, index=False, float_format='%.6f')
     
     print(f"原始数据已保存到: {file_path}")
     print(f"处理后的数据已保存到: {processed_file}")

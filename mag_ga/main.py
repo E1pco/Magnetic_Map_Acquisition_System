@@ -5,8 +5,8 @@ import os
 
 def run_programs_for_duration(duration):
     # 要运行的两个程序的命令，传递duration作为参数
-    program1 = ["python3", "/home/elpco/PycharmProjects/Magnetic_Map_Acquisition_System/mag_ga/ins_aq.py", str(duration)]
-    program2 = ["python3", "/home/elpco/PycharmProjects/Magnetic_Map_Acquisition_System/mag_ga/mag_aq.py", str(duration)]
+    program1 = ["python3", "/home/elpco/Python_Project/Magnetic_Map_Acquisition_System/mag_ga/ins_aq.py", str(duration)]
+    program2 = ["python3", "/home/elpco/Python_Project/Magnetic_Map_Acquisition_System/mag_ga/mag_aq.py", str(duration)]
 
     # 创建管道用于进程通信，只将标准错误重定向到/dev/null
     with open(os.devnull, 'w') as devnull:

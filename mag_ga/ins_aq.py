@@ -125,7 +125,8 @@ def onUpdate_uesr(deviceModel):
             sensor_data["角速度"]["Z轴"],
             sensor_data["温度"],
             sensor_data["经度"],
-            sensor_data["纬度"]
+            sensor_data["纬度"],
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         ])
 
@@ -150,7 +151,7 @@ def startRecord():
     # 写入CSV标题行
     header = [
         "Chiptime", "Acceleration X (g)", "Acceleration Y (g)", "Acceleration Z (g)","Angular_velocity_X (dps)", "Angular_velocity_Y (dps)", "Angular_velocity_Z (dps)",
-        "Temperature (°C)", "Longitude", "Latitude"
+        "Temperature (°C)", "Longitude", "Latitude", "Record Time"
     ]
     csv_writer.writerow(header)
 
@@ -286,7 +287,7 @@ def main(duration):
         "51_0"
     )
     if platform.system().lower() == 'linux':
-        device.serialConfig.portName = "/dev/ins"
+        device.serialConfig.portName = "/dev/ttyUSB1"
     else:
         device.serialConfig.portName = "COM5"
     device.serialConfig.baud = 115200

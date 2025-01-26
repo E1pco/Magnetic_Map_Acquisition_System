@@ -14,7 +14,7 @@ UNPROCESSED_DATA_DIR = "mag_data/unprocessed"
 PROCESSED_DATA_DIR = "mag_data/processed"
 
 # 保存数据到CSV（只保留模值和滤波后的模值六位小数）
-def save_to_csv(file_path, t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes):
+def save_to_csv(file_path, t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes, timestamps):
     """保存数据到CSV文件并进行处理"""
     # 创建DataFrame
     df = pd.DataFrame({
@@ -23,7 +23,8 @@ def save_to_csv(file_path, t_values, x_values, y_values, z_values, magnitudes, f
         'Y': [round(y, 6) for y in y_values],
         'Z': [round(z, 6) for z in z_values],
         'Magnitude': [round(m, 6) for m in magnitudes],
-        'Filtered Magnitude': [round(fm, 6) for fm in filtered_magnitudes]
+        'Filtered Magnitude': [round(fm, 6) for fm in filtered_magnitudes],
+        'Timestamp': timestamps
     })
     
     # 处理数据
@@ -33,19 +34,25 @@ def save_to_csv(file_path, t_values, x_values, y_values, z_values, magnitudes, f
     for col in ['Time', 'X', 'Y', 'Z', 'Magnitude', 'Filtered Magnitude']:
         df_processed[col] = df_processed[col].round(6)
     
-    # 生成处理后的文件名
-    base_name = os.path.splitext(file_path)[0]
-    processed_file = f"{base_name}_processed.csv"
-    unprocessed_file = f"{base_name}_unprocessed.csv"
-    # 保存处理后的数据，使用float_format确保输出6位小数
-    df_processed.to_csv(processed_file, index=False, float_format='%.6f')
+    # 获取未处理和处理后的保存路径
+    base_name = os.path.basename(file_path)
+    unprocessed_file = os.path.join(UNPROCESSED_DATA_DIR, base_name)
+    processed_file = os.path.join(PROCESSED_DATA_DIR, base_name.replace(".csv", "_processed.csv"))
     
-    # 同时保存原始数据，也使用6位小数
+    # 保存数据
+    os.makedirs(UNPROCESSED_DATA_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
+    
+    # 保存原始数据，使用6位小数
     df.to_csv(unprocessed_file, index=False, float_format='%.6f')
     
-    print(f"原始数据已保存到: {file_path}")
+    # 保存处理后的数据，使用6位小数
+    df_processed.to_csv(processed_file, index=False, float_format='%.6f')
+    
+    print(f"原始数据已保存到: {unprocessed_file}")
     print(f"处理后的数据已保存到: {processed_file}")
     print(f"处理过程中合并了 {deleted_rows} 对数据点")
+
 
 # 解析接收到的数据
 def parse_received_data(received_data):
@@ -53,12 +60,14 @@ def parse_received_data(received_data):
     y_values = []
     z_values = []
     t_values = []
+    timestamps = []
 
     lines = received_data.splitlines()
 
     for line in lines:
         line = line.strip()
         parts = line.split()
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
         for i, part in enumerate(parts):
             if part.startswith("RD"):
@@ -73,8 +82,9 @@ def parse_received_data(received_data):
                         x_values.append(float(x))
                         y_values.append(float(y))
                         z_values.append(float(z))
+                        timestamps.append(current_time)
     
-    return x_values, y_values, z_values, t_values
+    return x_values, y_values, z_values, t_values, timestamps
 
 # 计算模值 (Magnitude)
 def calculate_magnitude(x_values, y_values, z_values):
@@ -187,7 +197,7 @@ def process_mag_data(df):
 
 # 从串口读取数据
 def read_from_serial(ser, stop_event, data_lists, duration):
-    x_values, y_values, z_values, t_values = data_lists
+    x_values, y_values, z_values, t_values, timestamps = data_lists
     start_time = time.time()
 
     while not stop_event.is_set():
@@ -197,12 +207,13 @@ def read_from_serial(ser, stop_event, data_lists, duration):
             if ser.in_waiting > 0:
                 line = ser.readline().decode(errors='ignore').strip()
                 if line and not stop_event.is_set():
-                    x_new, y_new, z_new, t_new = parse_received_data(line)
-                    if x_new and y_new and z_new and t_new:
+                    x_new, y_new, z_new, t_new, ts_new = parse_received_data(line)
+                    if x_new and y_new and z_new and t_new and ts_new:
                         x_values.extend(x_new)
                         y_values.extend(y_new)
                         z_values.extend(z_new)
                         t_values.extend(t_new)
+                        timestamps.extend(ts_new)
             if duration != 0 and time.time() - start_time > duration:
                 stop_event.set()
         except:
@@ -220,6 +231,7 @@ def send_and_read_from_serial(port, baudrate, send_data1, send_data2, duration, 
         y_values = []
         z_values = []
         t_values = []
+        timestamps = []
         stop_event = threading.Event()
 
         time.sleep(0.1)
@@ -234,7 +246,7 @@ def send_and_read_from_serial(port, baudrate, send_data1, send_data2, duration, 
         print("mag_aq started:", current_time_start)
 
         # 启动读取数据的线程
-        read_thread = threading.Thread(target=read_from_serial, args=(ser, stop_event, [x_values, y_values, z_values, t_values], duration))
+        read_thread = threading.Thread(target=read_from_serial, args=(ser, stop_event, [x_values, y_values, z_values, t_values, timestamps], duration))
         read_thread.start()
 
         # 在主线程中监听用户输入
@@ -262,7 +274,7 @@ def send_and_read_from_serial(port, baudrate, send_data1, send_data2, duration, 
         filtered_magnitudes = moving_average_filter(magnitudes, window_size=10)
         
         # 保存数据到 CSV 文件
-        save_to_csv(output_csv_file, t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes)
+        save_to_csv(output_csv_file, t_values, x_values, y_values, z_values, magnitudes, filtered_magnitudes, timestamps)
         visualize_data(x_values, y_values, z_values, t_values, magnitudes, filtered_magnitudes)
     finally:
         if ser is not None and ser.is_open:
@@ -278,7 +290,7 @@ def main(duration):
     if os.name == 'nt':  # Windows 系统
         port = "COM6"  # 根据实际情况修改
     else:  # 假设其他系统为Linux
-        port = "/dev/mag"  # 根据实际情况修改
+        port = "/dev/ttyUSB0"  # 根据实际情况修改
     
     baudrate = 115200
     send_data_rc = "rc"

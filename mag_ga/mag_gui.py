@@ -136,14 +136,28 @@ class DataViewerWidget(QWidget):
         
     def update_plot(self, df):
         try:
-            # 更新绘图
-            self.ax.clear()
-            self.ax.plot(df['Time'], df['Magnitude'], label='Raw Data')
-            self.ax.plot(df['Time'], df['Filtered Magnitude'], label='Filtered Data')
-            self.ax.set_xlabel('Time (s)')
-            self.ax.set_ylabel('Magnetic Field Strength')
-            self.ax.grid(True)
-            self.ax.legend()
+            # 更新数据图
+            self.ax1.clear()
+            self.ax1.plot(df['Time'], df['Magnitude'], label='Raw Data')
+            self.ax1.plot(df['Time'], df['Filtered Magnitude'], label='Filtered Data')
+            self.ax1.set_xlabel('Time (s)')
+            self.ax1.set_ylabel('Magnetic Field Strength')
+            self.ax1.grid(True)
+            self.ax1.legend()
+
+            # 更新地图
+            self.ax2.clear()
+            if 'Latitude' in df.columns and 'Longitude' in df.columns:
+                self.ax2.scatter(df['Longitude'], df['Latitude'], c=df['Magnitude'], 
+                               cmap='viridis', s=50)
+                self.ax2.set_xlabel('Longitude')
+                self.ax2.set_ylabel('Latitude')
+                self.ax2.grid(True)
+            else:
+                self.ax2.text(0.5, 0.5, 'No Location Data', 
+                            ha='center', va='center')
+            
+            self.figure.tight_layout()
             self.canvas.draw()
             
             # 计算并更新统计信息

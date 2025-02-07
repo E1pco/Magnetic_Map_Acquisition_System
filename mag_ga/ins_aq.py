@@ -275,7 +275,7 @@ def main(duration):
         "51_0"
     )
     if platform.system().lower() == 'linux':
-        device.serialConfig.portName = "/dev/ttyUSB1"
+        device.serialConfig.portName = "/dev/ttyUSB0"
     else:
         device.serialConfig.portName = "COM5"
     device.serialConfig.baud = 115200

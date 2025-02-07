@@ -398,7 +398,7 @@ def main(duration):
     if os.name == 'nt':  # Windows 系统
         port = "COM6"  # 根据实际情况修改
     else:  # 假设其他系统为Linux
-        port = "/dev/ttyUSB0"  # 根据实际情况修改
+        port = "/dev/ttyUSB2"  # 根据实际情况修改
     
     baudrate = 115200
     send_data_rc = "rc"
